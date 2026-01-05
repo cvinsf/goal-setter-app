@@ -30,7 +30,7 @@ export const Layout: React.FC<LayoutProps> = ({
   const [selectedGoalType, setSelectedGoalType] = useState<GoalType | null>(null);
 
   return (
-    <div className="min-h-screen flex flex-col bg-primary-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header
         onOpenSettings={onOpenSettings}
         unreadNotifications={unreadNotifications}
@@ -40,7 +40,7 @@ export const Layout: React.FC<LayoutProps> = ({
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {children}
           </div>
         </main>
@@ -61,7 +61,7 @@ export const Layout: React.FC<LayoutProps> = ({
       {/* Side Panel Toggle Button (Mobile) */}
       <button
         onClick={() => setSidePanelOpen(!sidePanelOpen)}
-        className="fixed bottom-4 right-4 md:hidden bg-primary-700 text-white rounded-full p-3 shadow-lg hover:bg-primary-800 transition-colors z-30"
+        className="fixed bottom-4 right-4 md:hidden bg-gradient-to-r from-primary-600 to-accent-600 text-white rounded-full p-4 shadow-xl hover:shadow-2xl hover:scale-110 transition-all z-30"
         aria-label={sidePanelOpen ? 'Close side panel' : 'Open side panel'}
       >
         <svg
