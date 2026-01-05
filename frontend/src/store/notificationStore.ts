@@ -1,8 +1,13 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import type { Notification, NotificationType, WeeklySummary } from '../types';
+import type { Database } from '../lib/database.types';
+import type { Notification, WeeklySummary } from '../types';
+import { NotificationType } from '../types';
 import { storage, generateId } from '../utils';
+
+type NotificationRow = Database['public']['Tables']['notifications']['Row'];
+type NotificationInsert = Database['public']['Tables']['notifications']['Insert'];
 
 interface NotificationState {
   notifications: Notification[];
@@ -57,7 +62,7 @@ export const useNotificationStore = create<NotificationState>()(
 
             if (error) throw error;
 
-            const notifications: Notification[] = (data || []).map((row) => ({
+            const notifications: Notification[] = (data || []).map((row: NotificationRow) => ({
               id: row.id,
               userId: row.user_id,
               title: row.title,
@@ -86,6 +91,7 @@ export const useNotificationStore = create<NotificationState>()(
           if (isSupabaseConfigured()) {
             const { error } = await supabase
               .from('notifications')
+              // @ts-expect-error - Supabase type inference issue
               .update({ is_read: true })
               .eq('id', id);
 
@@ -119,6 +125,7 @@ export const useNotificationStore = create<NotificationState>()(
 
             const { error } = await supabase
               .from('notifications')
+              // @ts-expect-error - Supabase type inference issue
               .update({ is_read: true })
               .eq('user_id', user.user.id)
               .eq('is_read', false);
@@ -152,14 +159,15 @@ This contributed ${summary.contributionToMonthly.toFixed(1)}% to your monthly go
 Keep up the great work!
         `.trim();
 
+        const { weekStartDate, weekEndDate, ...restSummary } = summary;
         await get().addNotification(
-          'weekly_summary',
+          NotificationType.WEEKLY_SUMMARY,
           'Weekly Progress Summary',
           message,
           {
-            weekStartDate: summary.weekStartDate.toISOString(),
-            weekEndDate: summary.weekEndDate.toISOString(),
-            ...summary,
+            weekStartDate: weekStartDate.toISOString(),
+            weekEndDate: weekEndDate.toISOString(),
+            ...restSummary,
           }
         );
       },
@@ -171,27 +179,31 @@ Keep up the great work!
 
             if (!user.user) return;
 
+            const insertData: NotificationInsert = {
+              user_id: user.user.id,
+              type,
+              title,
+              message,
+            };
+
             const { data, error } = await supabase
               .from('notifications')
-              .insert({
-                user_id: user.user.id,
-                type,
-                title,
-                message,
-              })
+              .insert(insertData as any)
               .select()
               .single();
 
             if (error) throw error;
+            if (!data) return;
 
+            const notificationData: NotificationRow = data;
             const notification: Notification = {
-              id: data.id,
-              userId: data.user_id,
-              title: data.title,
-              message: data.message,
-              type: data.type as NotificationType,
-              isRead: data.is_read,
-              createdAt: new Date(data.created_at),
+              id: notificationData.id,
+              userId: notificationData.user_id,
+              title: notificationData.title,
+              message: notificationData.message,
+              type: notificationData.type as NotificationType,
+              isRead: notificationData.is_read,
+              createdAt: new Date(notificationData.created_at),
               metadata,
             };
 

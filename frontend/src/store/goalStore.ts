@@ -1,14 +1,21 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import type { Database } from '../lib/database.types';
 import type {
   Goal,
   GoalType,
+  TrackingType,
+  DifficultyLevel,
   CreateGoalInput,
   UpdateGoalInput,
   GoalHierarchy,
 } from '../types';
 import { groupGoalsByType, storage } from '../utils';
+
+type GoalRow = Database['public']['Tables']['goals']['Row'];
+type GoalInsert = Database['public']['Tables']['goals']['Insert'];
+type GoalUpdate = Database['public']['Tables']['goals']['Update'];
 
 interface GoalState {
   goals: Goal[];
@@ -61,14 +68,14 @@ export const useGoalStore = create<GoalState>()(
 
             if (error) throw error;
 
-            const goals: Goal[] = (data || []).map((row) => ({
+            const goals: Goal[] = (data || []).map((row: GoalRow) => ({
               id: row.id,
               userId: row.user_id,
               parentGoalId: row.parent_goal_id,
               title: row.title,
               description: row.description || undefined,
               goalType: row.goal_type as GoalType,
-              trackingType: row.tracking_type,
+              trackingType: row.tracking_type as TrackingType,
               isCompleted: row.is_completed,
               currentValue: row.current_value || undefined,
               targetValue: row.target_value || undefined,
@@ -77,7 +84,7 @@ export const useGoalStore = create<GoalState>()(
               endDate: row.end_date ? new Date(row.end_date) : undefined,
               createdAt: new Date(row.created_at),
               updatedAt: new Date(row.updated_at),
-              difficultyLevel: row.difficulty_level || undefined,
+              difficultyLevel: (row.difficulty_level as DifficultyLevel) || undefined,
               estimatedTimeHours: row.estimated_time_hours || undefined,
               resourcesNeeded: row.resources_needed || undefined,
               feasibilityNotes: row.feasibility_notes || undefined,
@@ -106,49 +113,53 @@ export const useGoalStore = create<GoalState>()(
 
             if (!user.user) throw new Error('Not authenticated');
 
+            const insertData: GoalInsert = {
+              user_id: user.user.id,
+              title: input.title,
+              description: input.description,
+              goal_type: input.goalType,
+              parent_goal_id: input.parentGoalId,
+              tracking_type: input.trackingType,
+              target_value: input.targetValue,
+              unit: input.unit,
+              start_date: input.startDate?.toISOString().split('T')[0],
+              end_date: input.endDate?.toISOString().split('T')[0],
+              difficulty_level: input.difficultyLevel,
+              estimated_time_hours: input.estimatedTimeHours,
+              resources_needed: input.resourcesNeeded,
+              feasibility_notes: input.feasibilityNotes,
+            };
+
             const { data, error } = await supabase
               .from('goals')
-              .insert({
-                user_id: user.user.id,
-                title: input.title,
-                description: input.description,
-                goal_type: input.goalType,
-                parent_goal_id: input.parentGoalId,
-                tracking_type: input.trackingType,
-                target_value: input.targetValue,
-                unit: input.unit,
-                start_date: input.startDate?.toISOString().split('T')[0],
-                end_date: input.endDate?.toISOString().split('T')[0],
-                difficulty_level: input.difficultyLevel,
-                estimated_time_hours: input.estimatedTimeHours,
-                resources_needed: input.resourcesNeeded,
-                feasibility_notes: input.feasibilityNotes,
-              })
+              .insert(insertData as any)
               .select()
               .single();
 
             if (error) throw error;
+            if (!data) throw new Error('No data returned from insert');
 
+            const goalData: GoalRow = data;
             const newGoal: Goal = {
-              id: data.id,
-              userId: data.user_id,
-              parentGoalId: data.parent_goal_id,
-              title: data.title,
-              description: data.description || undefined,
-              goalType: data.goal_type as GoalType,
-              trackingType: data.tracking_type,
-              isCompleted: data.is_completed,
-              currentValue: data.current_value || undefined,
-              targetValue: data.target_value || undefined,
-              unit: data.unit || undefined,
-              startDate: data.start_date ? new Date(data.start_date) : undefined,
-              endDate: data.end_date ? new Date(data.end_date) : undefined,
-              createdAt: new Date(data.created_at),
-              updatedAt: new Date(data.updated_at),
-              difficultyLevel: data.difficulty_level || undefined,
-              estimatedTimeHours: data.estimated_time_hours || undefined,
-              resourcesNeeded: data.resources_needed || undefined,
-              feasibilityNotes: data.feasibility_notes || undefined,
+              id: goalData.id,
+              userId: goalData.user_id,
+              parentGoalId: goalData.parent_goal_id,
+              title: goalData.title,
+              description: goalData.description || undefined,
+              goalType: goalData.goal_type as GoalType,
+              trackingType: goalData.tracking_type as TrackingType,
+              isCompleted: goalData.is_completed,
+              currentValue: goalData.current_value || undefined,
+              targetValue: goalData.target_value || undefined,
+              unit: goalData.unit || undefined,
+              startDate: goalData.start_date ? new Date(goalData.start_date) : undefined,
+              endDate: goalData.end_date ? new Date(goalData.end_date) : undefined,
+              createdAt: new Date(goalData.created_at),
+              updatedAt: new Date(goalData.updated_at),
+              difficultyLevel: (goalData.difficulty_level as DifficultyLevel) || undefined,
+              estimatedTimeHours: goalData.estimated_time_hours || undefined,
+              resourcesNeeded: goalData.resources_needed || undefined,
+              feasibilityNotes: goalData.feasibility_notes || undefined,
             };
 
             set((state) => ({
@@ -203,49 +214,54 @@ export const useGoalStore = create<GoalState>()(
 
         try {
           if (isSupabaseConfigured()) {
+            const updateData: GoalUpdate = {
+              title: input.title,
+              description: input.description,
+              tracking_type: input.trackingType,
+              is_completed: input.isCompleted,
+              current_value: input.currentValue,
+              target_value: input.targetValue,
+              unit: input.unit,
+              start_date: input.startDate?.toISOString().split('T')[0],
+              end_date: input.endDate?.toISOString().split('T')[0],
+              difficulty_level: input.difficultyLevel,
+              estimated_time_hours: input.estimatedTimeHours,
+              resources_needed: input.resourcesNeeded,
+              feasibility_notes: input.feasibilityNotes,
+            };
+
             const { data, error } = await supabase
               .from('goals')
-              .update({
-                title: input.title,
-                description: input.description,
-                tracking_type: input.trackingType,
-                is_completed: input.isCompleted,
-                current_value: input.currentValue,
-                target_value: input.targetValue,
-                unit: input.unit,
-                start_date: input.startDate?.toISOString().split('T')[0],
-                end_date: input.endDate?.toISOString().split('T')[0],
-                difficulty_level: input.difficultyLevel,
-                estimated_time_hours: input.estimatedTimeHours,
-                resources_needed: input.resourcesNeeded,
-                feasibility_notes: input.feasibilityNotes,
-              })
+              // @ts-expect-error - Supabase type inference issue
+              .update(updateData)
               .eq('id', input.id)
               .select()
               .single();
 
             if (error) throw error;
+            if (!data) throw new Error('No data returned from update');
 
+            const goalData: GoalRow = data;
             const updatedGoal: Goal = {
-              id: data.id,
-              userId: data.user_id,
-              parentGoalId: data.parent_goal_id,
-              title: data.title,
-              description: data.description || undefined,
-              goalType: data.goal_type as GoalType,
-              trackingType: data.tracking_type,
-              isCompleted: data.is_completed,
-              currentValue: data.current_value || undefined,
-              targetValue: data.target_value || undefined,
-              unit: data.unit || undefined,
-              startDate: data.start_date ? new Date(data.start_date) : undefined,
-              endDate: data.end_date ? new Date(data.end_date) : undefined,
-              createdAt: new Date(data.created_at),
-              updatedAt: new Date(data.updated_at),
-              difficultyLevel: data.difficulty_level || undefined,
-              estimatedTimeHours: data.estimated_time_hours || undefined,
-              resourcesNeeded: data.resources_needed || undefined,
-              feasibilityNotes: data.feasibility_notes || undefined,
+              id: goalData.id,
+              userId: goalData.user_id,
+              parentGoalId: goalData.parent_goal_id,
+              title: goalData.title,
+              description: goalData.description || undefined,
+              goalType: goalData.goal_type as GoalType,
+              trackingType: goalData.tracking_type as TrackingType,
+              isCompleted: goalData.is_completed,
+              currentValue: goalData.current_value || undefined,
+              targetValue: goalData.target_value || undefined,
+              unit: goalData.unit || undefined,
+              startDate: goalData.start_date ? new Date(goalData.start_date) : undefined,
+              endDate: goalData.end_date ? new Date(goalData.end_date) : undefined,
+              createdAt: new Date(goalData.created_at),
+              updatedAt: new Date(goalData.updated_at),
+              difficultyLevel: (goalData.difficulty_level as DifficultyLevel) || undefined,
+              estimatedTimeHours: goalData.estimated_time_hours || undefined,
+              resourcesNeeded: goalData.resources_needed || undefined,
+              feasibilityNotes: goalData.feasibility_notes || undefined,
             };
 
             set((state) => ({

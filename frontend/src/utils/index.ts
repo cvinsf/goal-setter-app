@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { GoalType, Goal, DifficultyLevel } from '../types';
+import { GoalType, type Goal, DifficultyLevel } from '../types';
 
 /**
  * Merge Tailwind CSS classes with proper precedence
@@ -161,7 +161,7 @@ export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
 
   return function executedFunction(...args: Parameters<T>) {
     const later = () => {

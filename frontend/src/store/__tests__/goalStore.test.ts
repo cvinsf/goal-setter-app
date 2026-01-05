@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGoalStore } from '../goalStore';
-import { GoalType, TrackingType, CreateGoalInput } from '../../types';
-import { mockDailyGoal, mockWeeklyGoal, mockMonthlyGoal, mockYearlyGoal } from '../../test/mockData';
+import { GoalType, TrackingType, type CreateGoalInput } from '../../types';
 
 // Mock Supabase
 vi.mock('../../lib/supabase', () => ({
@@ -326,14 +325,14 @@ describe('goalStore', () => {
         trackingType: TrackingType.CHECKBOX,
       });
 
-      const child1 = await store.createGoal({
+      await store.createGoal({
         title: 'Child 1',
         goalType: GoalType.DAILY,
         trackingType: TrackingType.CHECKBOX,
         parentGoalId: parent.id,
       });
 
-      const child2 = await store.createGoal({
+      await store.createGoal({
         title: 'Child 2',
         goalType: GoalType.DAILY,
         trackingType: TrackingType.CHECKBOX,

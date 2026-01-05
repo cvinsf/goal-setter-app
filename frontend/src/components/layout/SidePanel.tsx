@@ -1,6 +1,6 @@
 import React from 'react';
 import { GoalType, GOAL_TYPE_LABELS, type Goal } from '../../types';
-import { cn, calculatePercentage } from '../../utils';
+import { cn } from '../../utils';
 import { Badge, ProgressBar } from '../ui';
 
 export interface SidePanelProps {
@@ -9,7 +9,7 @@ export interface SidePanelProps {
   monthlyGoals: Goal[];
   weeklyGoals: Goal[];
   selectedGoalType: GoalType | null;
-  onSelectGoalType: (type: GoalType) => void;
+  onSelectGoalType: (type: GoalType | null) => void;
   onSelectGoal: (goal: Goal) => void;
   calculateProgress: (goalId: string) => number;
 }

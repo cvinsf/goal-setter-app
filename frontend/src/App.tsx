@@ -1,17 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Layout } from './components/layout';
-import { Button, Modal, ModalFooter, Input, Select, Textarea, Card, CardHeader, CardTitle, CardContent, CardFooter, ProgressBar, Checkbox, Badge } from './components/ui';
+import { Button, Modal, ModalFooter, Input, Select, Textarea, Card, CardHeader, CardTitle, CardContent, ProgressBar, Checkbox, Badge } from './components/ui';
 import { ToastContainer } from './components/ui/Toast';
 import { useGoalStore, useNotificationStore, useToastStore } from './store';
-import { GoalType, TrackingType, DifficultyLevel, GOAL_TYPE_LABELS, TRACKING_TYPE_LABELS, DIFFICULTY_LABELS, type Goal } from './types';
+import { GoalType, TrackingType, GOAL_TYPE_LABELS, TRACKING_TYPE_LABELS } from './types';
 import { formatDate, getDaysRemaining, cn } from './utils';
 
 function App() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    goalType: GoalType;
+    trackingType: TrackingType;
+    targetValue: string;
+    unit: string;
+  }>({
     title: '',
     description: '',
     goalType: GoalType.DAILY,
@@ -21,11 +27,9 @@ function App() {
   });
 
   const {
-    goals,
     loading,
     fetchGoals,
     createGoal,
-    updateGoal,
     deleteGoal,
     toggleComplete,
     updateProgress,
@@ -118,7 +122,6 @@ function App() {
         unreadNotifications={getUnreadCount()}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenNotifications={() => setIsNotificationsOpen(true)}
-        onSelectGoal={setSelectedGoal}
         calculateProgress={calculateProgress}
       >
         {/* Main Dashboard */}

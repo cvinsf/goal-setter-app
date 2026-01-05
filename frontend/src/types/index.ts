@@ -1,42 +1,48 @@
-// ==================== Core Enums ====================
+// ==================== Core Types ====================
 
-export enum GoalType {
-  YEARLY = 'yearly',
-  MONTHLY = 'monthly',
-  WEEKLY = 'weekly',
-  DAILY = 'daily',
-}
+export type GoalType = 'yearly' | 'monthly' | 'weekly' | 'daily';
+export const GoalType = {
+  YEARLY: 'yearly' as const,
+  MONTHLY: 'monthly' as const,
+  WEEKLY: 'weekly' as const,
+  DAILY: 'daily' as const,
+};
 
-export enum TrackingType {
-  CHECKBOX = 'checkbox',
-  NUMERIC = 'numeric',
-  HYBRID = 'hybrid',
-}
+export type TrackingType = 'checkbox' | 'numeric' | 'hybrid';
+export const TrackingType = {
+  CHECKBOX: 'checkbox' as const,
+  NUMERIC: 'numeric' as const,
+  HYBRID: 'hybrid' as const,
+};
 
-export enum SubscriptionTier {
-  FREE = 'free',
-  PAID = 'paid',
-}
+export type SubscriptionTier = 'free' | 'paid';
+export const SubscriptionTier = {
+  FREE: 'free' as const,
+  PAID: 'paid' as const,
+};
 
-export enum NotificationType {
-  WEEKLY_SUMMARY = 'weekly_summary',
-  REMINDER = 'reminder',
-  ACHIEVEMENT = 'achievement',
-}
+export type NotificationType = 'weekly_summary' | 'reminder' | 'achievement';
+export const NotificationType = {
+  WEEKLY_SUMMARY: 'weekly_summary' as const,
+  REMINDER: 'reminder' as const,
+  ACHIEVEMENT: 'achievement' as const,
+};
 
-export enum LLMProvider {
-  OPENAI = 'openai',
-  ANTHROPIC = 'anthropic',
-  GOOGLE = 'google',
-}
+export type LLMProvider = 'openai' | 'anthropic' | 'google';
+export const LLMProvider = {
+  OPENAI: 'openai' as const,
+  ANTHROPIC: 'anthropic' as const,
+  GOOGLE: 'google' as const,
+};
 
-export enum DifficultyLevel {
-  VERY_EASY = 1,
-  EASY = 2,
-  MODERATE = 3,
-  HARD = 4,
-  VERY_HARD = 5,
-}
+export type DifficultyLevel = 1 | 2 | 3 | 4 | 5;
+export const DifficultyLevel = {
+  VERY_EASY: 1 as const,
+  EASY: 2 as const,
+  MODERATE: 3 as const,
+  HARD: 4 as const,
+  VERY_HARD: 5 as const,
+};
 
 // ==================== Database Models ====================
 

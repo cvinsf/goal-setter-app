@@ -1,11 +1,10 @@
 import {
-  Goal,
+  type Goal,
   GoalType,
   TrackingType,
   DifficultyLevel,
-  Notification,
+  type Notification,
   NotificationType,
-  SubscriptionTier,
 } from '../types';
 
 export const mockYearlyGoal: Goal = {

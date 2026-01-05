@@ -182,7 +182,6 @@ function extractTextValue(text: string, key: string): string | undefined {
  */
 function getMockSuggestions(request: LLMRequest): LLMResponse {
   const goalType = request.context?.goalType || 'yearly';
-  const title = request.context?.goalTitle || 'your goal';
 
   const suggestions: Record<GoalType | string, LLMSuggestion> = {
     yearly: {
