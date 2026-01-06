@@ -1,5 +1,7 @@
 import React from 'react';
 import { Badge } from '../ui';
+import { useAuthStore } from '../../store';
+import { useToastStore } from '../../store/toastStore';
 
 export interface HeaderProps {
   onOpenSettings?: () => void;
@@ -12,6 +14,18 @@ export const Header: React.FC<HeaderProps> = ({
   unreadNotifications = 0,
   onOpenNotifications,
 }) => {
+  const { user, signOut } = useAuthStore();
+  const { addToast } = useToastStore();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      addToast('success', 'Signed out successfully');
+    } catch (error) {
+      addToast('error', 'Failed to sign out');
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full border-b border-primary-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -40,7 +54,17 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {/* User Info */}
+            {user && (
+              <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-primary-50 rounded-lg">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary-600 to-accent-600 flex items-center justify-center text-white font-semibold">
+                  {user.email?.[0].toUpperCase() || 'U'}
+                </div>
+                <span className="text-sm font-medium text-primary-900">{user.email}</span>
+              </div>
+            )}
+
             {/* Notifications */}
             <button
               onClick={onOpenNotifications}
@@ -94,6 +118,28 @@ export const Header: React.FC<HeaderProps> = ({
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+            </button>
+
+            {/* Sign Out */}
+            <button
+              onClick={handleSignOut}
+              className="rounded-lg p-2 text-danger-600 hover:bg-danger-50 hover:text-danger-700 transition-colors"
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                 />
               </svg>
             </button>
